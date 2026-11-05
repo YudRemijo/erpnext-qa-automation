@@ -1,0 +1,18 @@
+[tool.pytest.ini_options]
+minversion = "9.2"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--strict-config --strict-markers --tb=short --browser chromium --tracing off --screenshot off --video off"
+markers = [
+    "smoke: read-only checks of essential ERPNext navigation",
+    "transactional: opt-in serial local QA writes; documents retained for audit",
+    "negative: invalid UI attempts, serialized; unexpected persistence stops the run",
+    "offline: no ERPNext, network, credentials, services or browser runtime",
+    "integration: requires a separately provisioned and authenticated ERPNext",
+    "browser: needs browser binaries but not ERPNext or real credentials",
+]
+log_cli = false
+# Session-wide assertion/action budget; document navigation has a separate budget.
+# Auto-wait limits only: no sleeps, retries of whole tests, or network-idle waits.
+ui_timeout_ms = "15000"
+navigation_timeout_ms = "30000"

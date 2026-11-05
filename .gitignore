@@ -1,0 +1,69 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+credentials/
+secrets/
+credentials.*
+secrets.*
+*.pem
+*.key
+
+# Authenticated browser state and profiles (contain session secrets)
+playwright/.auth/
+.auth/
+auth.json
+auth-state*.json
+auth_state*.json
+storage-state*.json
+storage_state*.json
+storageState*.json
+browser-profile*/
+user-data-dir*/
+
+# Python and tooling caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Generated test evidence and reports
+artifacts/
+test-results/
+playwright-report/
+reports/
+screenshots/
+videos/
+traces/
+*.log
+
+# Logical backups, private recovery settings and temporary exports (never publish)
+backups/
+ERPNext-QA-Backups/
+qa-backup-staging/
+*.sql
+*.sql.gz
+*.dump
+*.7z
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.bak
+*.tmp
+*.temp
+site_config.json
+common_site_config.json
+# Retired, unvalidated second-stack prototype; retained locally, not distributed.
+/infra/
