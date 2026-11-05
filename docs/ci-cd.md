@@ -21,8 +21,8 @@ GitHub-hosted localhost belongs to the runner, not to the developer's ERPNext.
 
 Action versions were verified with read-only `git ls-remote` against the official
 repositories. References: [checkout](https://github.com/actions/checkout),
-[setup-python](https://github.com/actions/setup-python). The workflow has not been
-published or executed on GitHub; no external CI status is claimed.
+[setup-python](https://github.com/actions/setup-python). The first hosted execution and its corrected results are recorded in
+[First hosted execution](#first-hosted-execution). Offline CI does not validate ERPNext.
 
 ## Capability classification and guards
 
@@ -51,7 +51,7 @@ Commands for selection inspection only:
 .\.venv\Scripts\python.exe -m pytest --collect-only -q -m transactional
 ```
 
-Current selections: 18 offline, 6 integration without transactions, 3 transactional,
+Current selections: 19 offline, 6 integration without transactions, 3 transactional,
 plus 1 separate browser diagnostic. No offline test depends on an installed Chromium
 or reads the real `.env`. Installing the Playwright Python package is not installing
 a browser. A local proof removed ERPNEXT variables from the child process, set CI=true
@@ -66,8 +66,8 @@ unlinking a lock used by another process. Existing Windows byte-range protection
 remains in place; POSIX uses flock. Tests exercise competing descriptors, exception
 release and an unsupported backend without any ERPNext operation.
 
-The Windows backend is locally validated. Linux/POSIX execution is not claimed until
-the first Linux runner run. Local file locking is not a distributed database lock;
+The Windows backend is locally validated, and both Windows and POSIX lock checks
+passed in the hosted offline run recorded below. Local file locking is not a distributed database lock;
 never run transactions from multiple hosts or concurrently with manual operations.
 Parallel Pytest workers remain forbidden for transaction/negative attempts.
 
@@ -77,8 +77,9 @@ Python 3.12; observed local patch 3.12.10. Existing direct pins are unchanged:
 pytest 9.2.0, playwright 1.64.1, pytest-playwright 0.10.0. `constraints-dev.txt` records
 the installed dependency closure with Python 3.12 Windows/Linux markers considered.
 It constrains transitive resolution without introducing another dependency manager.
-Hosted-runner package installation, platform wheel availability and Python patch
-updates remain to be validated by real Actions runs. Artifacts are not hash-pinned.
+Hosted-runner installation was verified in the run below on Linux Python 3.12.15
+and Windows Python 3.12.10. Other Python patches and dependency upgrades need fresh
+validation. Package artifacts are not hash-pinned.
 
 No new lint/formatting/YAML dependency was installed. `scripts/check_project.py` uses
 AST parsing for candidate Python sources, tomllib for Pytest config, exact-pin checks,
@@ -187,3 +188,34 @@ functional documents and Docker infrastructure were not modified.
 5. Keep ERPNext integration/manual transactions separate. Before enabling a dedicated
    transactional runner, validate restoration, prepare a reproducible data contract,
    generalize historical-record dependencies and define a single-writer execution window.
+
+
+## First hosted execution
+
+Public repository: https://github.com/YudRemijo/erpnext-qa-automation. The original
+commit 53837b87219f87746f8429740d75c326bd9feaeb was published unchanged on main.
+
+The [initial push run](https://github.com/YudRemijo/erpnext-qa-automation/actions/runs/41951872760)
+failed workflow validation before either job started: job-level env referenced
+`runner.temp`, where the runner context is unavailable. Local YAML parsing had
+validated syntax but not this GitHub expression-context rule. No tests ran in that
+failed workflow; it is not a passing CI result.
+
+Commit a53a3ca7f5724ff1e50b679d31993163d83f4b91 replaced the browser sentinel path
+with `github.workspace`, added a focused contract check and an offline regression
+for the invalid context, and updated the public clone instructions. No test oracle
+was weakened. The original commit remains in history; no force push was used.
+
+The [corrected push run](https://github.com/YudRemijo/erpnext-qa-automation/actions/runs/41952077260)
+completed successfully. The jobs and logs were read after completion:
+
+| Runner | Python | Offline test result | Mandatory checks |
+|---|---|---|---|
+| ubuntu-24.04 | 3.12.15 | 19 passed, 10 deselected in 1.32 s | dependency install, pip check, project checker, YAML validation passed |
+| windows-2022 | 3.12.10 | 19 passed, 10 deselected in 1.60 s | dependency install, pip check, project checker, YAML validation passed |
+
+Both jobs ran `python -m pytest -m offline -v --junitxml=reports/offline.xml`.
+Neither installed a browser nor accessed ERPNext; no transactional tests were run.
+These are actual hosted offline results, not hosted UI/E2E coverage. No success
+badge or screenshot has been fabricated. The read-only contents permission and
+no-persisted-checkout-credentials settings remain unchanged.

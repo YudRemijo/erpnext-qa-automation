@@ -79,8 +79,9 @@ needed for these commands. Playwright's **Python package** is installed as a pro
 dependency; that is separate from downloading a browser runtime. Python 3.12 is
 required; the observed local interpreter is 3.12.10. Direct dependencies are Pytest
 9.2.0, Playwright 1.64.1 and pytest-playwright 0.10.0. `constraints-dev.txt` records
-resolved installed transitive versions. Wheels are not hash-locked, and installation
-on the GitHub runners is pending its first actual workflow run.
+resolved installed transitive versions. Wheels are not hash-locked. Installation
+and the offline checks were verified on GitHub-hosted Linux and Windows runners;
+see the [hosted execution record](docs/ci-cd.md#first-hosted-execution).
 
 ## Configure your own ERPNext for UI tests
 

@@ -1,7 +1,7 @@
 # Evidence index
 
-This index records observed **local** executions. No GitHub Actions run, public
-dashboard, screenshots or hosted E2E result is asserted. Raw artifacts stay ignored
+This index distinguishes observed **local business executions** from actual hosted
+**offline CI**. No hosted E2E result or public raw runtime archive is asserted. Artifacts stay ignored
 because they may include session-adjacent information or environment-specific data.
 
 | Coverage | Recorded evidence | Details |
@@ -11,6 +11,7 @@ because they may include session-adjacent information or environment-specific da
 | NEG-001/002/003 | Missing fields blocked by UI; zero quantity rejected by backend; no persisted documents | [Negative expected/actual results](negative-test-automation.md) |
 | NEG-004 | PO00004 submitted; PR00005 Draft; HTTP 417 OverAllowanceError; physical stock unchanged | [Retained controlled execution](negative-test-automation.md#retained-controlled-execution) |
 | CI preparation | Offline checks, marker selection and nontransactional local regression | [CI validation record](ci-cd.md#local-validation-record) |
+| Hosted offline CI | 19 passed on Linux and 19 on Windows; corrected push run completed successfully | [First hosted execution](ci-cd.md#first-hosted-execution) |
 | First commit preparation | Syntax, offline checks, exact-index audit and staging review | [Pre-commit audit](release-audit.md) |
 
 Full IDs use the PUR-ORD-2026 and MAT-PRE-2026 naming series in the linked guides;
