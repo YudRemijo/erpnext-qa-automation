@@ -21,7 +21,7 @@ jobs:
     env:
       CI: "true"
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/qa-no-browser-runtime
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.ci-no-browser-runtime
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
       - name: Checkout source without persisted credentials

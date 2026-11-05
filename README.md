@@ -24,8 +24,8 @@ flowchart LR
 
 The GitHub workflow validates **offline code and safeguards only**. It does not
 provision ERPNext, access a developer's localhost, or certify the UI/E2E suite.
-There are no deployment steps or unverified green badges. No GitHub run has yet
-been observed for this repository.
+There are no deployment steps or unverified green badges. Hosted offline execution
+and local ERPNext business execution are separate evidence scopes.
 
 ## Coverage and execution categories
 
@@ -45,10 +45,10 @@ at collection. All categories are registered and strict marker checking is enabl
 
 ## Install and run offline
 
-After the repository is published, replace the URL placeholder before cloning:
+Clone the public repository:
 
 ```text
-git clone REPLACE_WITH_REPOSITORY_URL erpnext-qa-automation
+git clone https://github.com/YudRemijo/erpnext-qa-automation.git
 cd erpnext-qa-automation
 ```
 
@@ -204,9 +204,10 @@ Documentation:
   [original exploratory findings](docs/exploratory-findings.md)
 
 Historical documents retain local observations; personal absolute paths were
-redacted and runtime code uses repository-relative paths. No public repository, GitHub
-Actions run, deployment, or validated restore is claimed. Publication remains a
-separate user action, including review of licensing, Git staging and visibility.
+redacted and runtime code uses repository-relative paths. The public repository is
+[YudRemijo/erpnext-qa-automation](https://github.com/YudRemijo/erpnext-qa-automation);
+actual hosted runs are visible in [Actions](https://github.com/YudRemijo/erpnext-qa-automation/actions).
+No deployment or validated restore is claimed.
 
 ## Licensing and attribution
 

@@ -43,7 +43,7 @@ def workflow_contract(text):
                 "ubuntu-24.04", "windows-2022"]
     errors = ["Missing required CI contract: " + part for part in required if part not in text]
     for forbidden in ("--run-transactions", "localhost:8080", "secrets.", "pull_request_target",
-                      "playwright install", "docker ", "continue-on-error", "write-all"):
+                      "playwright install", "docker ", "continue-on-error", "write-all", "runner.temp"):
         if forbidden in text:
             errors.append("Forbidden CI capability: " + forbidden)
     actions = re.findall(r"uses:\s*([^\s]+)", text)

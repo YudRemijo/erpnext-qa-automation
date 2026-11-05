@@ -31,6 +31,7 @@ if (workflow.permissions?.contents !== 'read') fail('Permissions must be read-on
 if (Object.keys(workflow.jobs).join() !== 'offline') fail('Only offline job is approved');
 const job = workflow.jobs.offline;
 if (job.env?.CI !== 'true') fail('CI guard must be enabled');
+if (Object.values(job.env || {}).some(v => String(v).includes('${{ runner.'))) fail('Runner context is unavailable in job-level env');
 if (job.strategy?.matrix?.os?.length !== 2) fail('Expected two OS runners');
 if (!job.steps.some(s => s.run?.startsWith('python -m pytest -m offline '))) fail('Offline command missing');
 console.log('Workflow YAML syntax and selected structural invariants PASSED');

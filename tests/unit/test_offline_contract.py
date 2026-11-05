@@ -49,6 +49,13 @@ def test_workflow_rejects_transaction_flag():
     assert workflow_contract(original + "\n# --run-transactions\n")
 
 
+def test_workflow_rejects_unavailable_runner_context():
+    original = (ROOT / ".github/workflows/ci.yml").read_text()
+    invalid = original.replace("github.workspace", "runner.temp")
+    assert invalid != original
+    assert workflow_contract(invalid)
+
+
 @pytest.mark.parametrize("args, message", [
     (["-m", "offline", "--run-transactions"], "--run-transactions is forbidden"),
     (["--collect-only", "-m", "integration"], "select tests with -m offline"),
