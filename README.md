@@ -128,9 +128,11 @@ Do not assume your ERPNext already has the following test prerequisites:
 
 These are a **demo data contract**, not a universal ERPNext fiscal policy. Provision
 them in your own controlled environment after review; tests do not create masters.
-The current QA-011 also checks four historical local documents for non-modification
-(PO00001/00002 and PR00001/00002); see the explicit prerequisite in `docs/ci-cd.md`.
-Do not run that test on a clean site expecting those records to exist automatically.
+QA-011 discovers all preexisting Purchase Orders and Purchase Receipts through
+paginated, read-only API queries and compares their complete contents after the run.
+No historical document IDs are required; an empty purchasing history is valid.
+The account must be able to list and read the complete intended preservation scope.
+Use a quiet single-writer window: API baseline reads are not an atomic database snapshot.
 
 Run read-only smoke separately from invalid Save attempts:
 
@@ -175,6 +177,7 @@ pages/                      Login/navigation and small procurement UI helpers
 scripts/check_project.py    Syntax/configuration/publication-safety checks
 tests/unit/                 Offline checks and a separately marked browser diagnostic
 tests/smoke/                Read-only authenticated UI checks
+tests/integration/          Read-only dynamic baseline regression
 tests/negative/             Invalid Save/Submit behavior, with UI/API evidence
 tests/transactions/         Authorized Draft and complete procurement lifecycle
 docs/                       Strategy, scenarios, observations and implementation guides

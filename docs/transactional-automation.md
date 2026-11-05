@@ -73,9 +73,16 @@ rows is assumed. Existing rows must remain unchanged, generated row IDs must be
 unique, and unexpected vouchers must not appear in the baseline delta. This detects
 unexpected stock effects; it is not a general-purpose ledger deduplication audit.
 
-The four protected prior documents are read before/after and compared in full:
-PUR-ORD-2026-00001, PUR-ORD-2026-00002, MAT-PRE-2026-00001 and MAT-PRE-2026-00002.
-The Purchase Invoice baseline must remain unchanged. The second receipt's GL Entries
+All preexisting PO/PR documents discoverable by the authenticated account are
+captured dynamically and compared in full, including nested rows and metadata.
+The paginated reader is reused; duplicate IDs and inventory changes during capture
+abort before creation. Final inventories must equal the baseline plus exactly the
+new PO and two new PR IDs; reuse, disappearance or unexpected additions fail.
+Full snapshots stay in memory, while manifests contain only document identities.
+An empty PO/PR history is supported; named ADL masters and approved defaults remain
+required. Listing/read errors fail closed; permission-filtered invisible documents
+cannot be protected. Require full intended read scope and no concurrent operators.
+This is not a transactionally atomic snapshot. The Purchase Invoice baseline must remain unchanged. The second receipt's GL Entries
 must exist, be active and have equal aggregate debit/credit. Their account selection,
 valuation and fiscal correctness are not independently certified by this test.
 
@@ -140,8 +147,7 @@ Authentication is never recorded. The offline privacy test checks a synthetic se
 is absent from the trace; see [negative-test-automation.md](negative-test-automation.md).
 A Save ambiguity is also printed to Pytest output.
 Keep artifacts local; do not publish them automatically. Locking now uses a shared
-fail-closed OS abstraction (`msvcrt` on Windows, `flock` on POSIX). Windows checks
-passed locally; actual Linux runner validation remains pending. Hosted CI deliberately
+fail-closed OS abstraction (`msvcrt` on Windows, `flock` on POSIX). Windows and POSIX lock checks passed in the hosted offline runs recorded in the CI guide. Hosted CI deliberately
 executes offline tests only; see [ci-cd.md](ci-cd.md).
 
 ## Verified execution — 2026-11-04
@@ -165,3 +171,89 @@ Run: `a975a6bc-ae58-42e3-8025-c0d811f0a4d7`.
 This is one successful E2E execution, not a stability study or a validated restore
 exercise. The observed stale mapped Received Quantity remains a focused regression
 candidate; the documented UI interaction is part of the current test procedure.
+
+
+## Dynamic preservation baseline change
+
+The historical four-ID guard was replaced by `config/document_baseline.py` and
+offline synthetic tests. The prior successful E2E run above predates this change;
+it does not validate the changed E2E implementation. The 4 + 6, PR references, tax,
+Stock Ledger, Bin, invoice and duplicate-action oracles remain unchanged.
+
+For approval, authorize exactly one serial QA-011 run in a quiet local QA window.
+First confirm masters, tax policy, read permissions and recovery acceptance. Record
+actual balance B and the dynamic PO/PR inventory; then run only:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/transactions/test_qa011_partial_receipt_e2e.py --run-transactions -v -s --maxfail=1
+```
+
+Expected evidence: one new submitted PO, two submitted PRs, voucher deltas +4/+6,
+Bin B+10, PO 100%/zero pending, unchanged invoices, every preexisting PO/PR unchanged
+and no other PO/PR inventory changes. Preserve all artifacts locally. After any
+uncertain Save/Submit or mismatch, inspect persisted IDs and stop: no automatic
+rerun, rollback or cleanup. This procedure was subsequently executed once successfully; see the controlled run record below.
+
+
+### Validation of the baseline change (no transactional execution)
+
+- Offline suite: 31 passed, 11 deselected in 5.69 seconds. Twelve new synthetic
+  cases cover empty/arbitrary histories, nested/metadata changes, deletion, unexpected
+  additions, reused/duplicate/missing generated IDs, denied reads, concurrent inventory
+  changes during capture and duplicate listing results.
+- Read-only ERPNext integration: 1 passed in 4.53 seconds, exercising actual GET-only
+  capture and unchanged-baseline comparison, without Save or Submit. Test entry point:
+  `tests/integration/test_document_baseline_read_only.py`.
+- Existing smoke and synthetic browser diagnostic: 4 passed in 29.39 seconds.
+- Transaction opt-in gate: 3 skipped, 39 deselected in 0.21 seconds.
+- Project checker, YAML validation and `git diff --check` passed. An initial duplicate
+  test-module basename was corrected by renaming the read-only integration module;
+  full collection and offline selection then passed.
+- QA-008, QA-011 and NEG-004 were not run transactionally. No commit or push was made.
+
+Capture/comparison costs grow linearly with existing PO/PR volume and keep full
+responses in memory. A dedicated small QA site and complete read permissions are
+required. The controlled transactional validation was subsequently completed once, as recorded below.
+
+
+### Controlled dynamic-baseline approval run — 2026-11-04
+
+Run UUID: `6a866263-1fc2-45cb-ad43-de75ee7bc46b`. QA-011 was executed exactly
+once with `--run-transactions --maxfail=1`: **1 passed in 34.87 seconds** (call
+29.36 seconds). No automatic transaction retry, cleanup, cancellation or restore.
+
+Preflight acquired the local lock, found no other Pytest process, authenticated as
+Administrator and read all 4 existing POs and 5 existing PRs. Repeated read-only
+inventory/content and stock checks were stable. Physical stock was 20 Nos, with no
+Purchase Invoice. These are absence-of-concurrency indicators, not atomic isolation.
+
+| Checkpoint | PO received/pending | Received % | Physical stock |
+|---|---|---|---|
+| Before receipts | 0 / 10 | 0 | 20 |
+| PR1 submitted | 4 / 6 | 40 | 24 |
+| PR2 submitted | 10 / 0 | 100 | 30 |
+
+- New PO `PUR-ORD-2026-00005`, line `15j6sq98ji`: docstatus 1, final To Bill;
+  USD 1,000 net + USD 190 ICMS = USD 1,190. Required By 2026-11-18.
+- New PR1 `MAT-PRE-2026-00006`: docstatus 1, To Bill, accepted 4/rejected 0;
+  USD 400 net + USD 76 ICMS = USD 476. SLE `607da0a7eb`: +4, balance 24.
+- New PR2 `MAT-PRE-2026-00007`: docstatus 1, To Bill, accepted 6/rejected 0;
+  USD 600 net + USD 114 ICMS = USD 714. SLE `285065d9da`: +6, balance 30.
+- Both PRs reference this run's PO and actual PO line. Voucher deltas total +10,
+  matching Bin 20 → 30; no unexpected voucher or duplicate ID.
+- All 9 preexisting PO/PR documents remained equal in full. Final inventories
+  contain exactly one new PO and two new PRs (5 POs and 7 PRs total).
+- No Purchase Invoice appeared; prior SLEs were unchanged. Second PR GL debits and
+  credits were both USD 600; this does not certify accounting/fiscal compliance.
+- The known mapped Received Quantity behavior was logged and recalculated through
+  legitimate unsaved UI edits; no internal browser state was modified.
+
+Post-E2E checks: **31 offline passed, 11 deselected in 5.32 seconds**; transaction
+gate **3 skipped, 39 deselected**; 7 nontransactional integration tests collected
+without execution; project checker, YAML validation, dependency integrity and
+whitespace checks passed. QA-008 and NEG-004 were not reexecuted.
+
+The ignored local manifest is retained for audit; full document snapshots remain
+in memory and no private runtime artifacts are committed. Broad read permissions,
+linear read/memory cost, no concurrent operators and a separately reviewed recovery
+plan remain requirements. A single successful run is not a stability study.

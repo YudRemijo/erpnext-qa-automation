@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import pytest
 
+from config.document_baseline import DocumentBaseline
 from pages.procurement import ProcurementDocument, ReadAPI
 from pages.purchase_order import create_verified_draft
 
@@ -45,22 +46,20 @@ def test_qa011_partial_receipts_complete_purchase_order(
                                                   "purchase_order", "purchase_order_item"]}
                           for i in doc["items"]]}
 
-    protected_ids = [("Purchase Order", "PUR-ORD-2026-00001"),
-                     ("Purchase Order", "PUR-ORD-2026-00002"),
-                     ("Purchase Receipt", "MAT-PRE-2026-00001"),
-                     ("Purchase Receipt", "MAT-PRE-2026-00002")]
-    protected = {(dt, name): reader.get(dt, name) for dt, name in protected_ids}
+    protected = DocumentBaseline.capture(reader)
     initial_balance, initial_ledger, initial_invoices = balance(), ledger(), invoices()
     all_pr_before = reader.list("Purchase Receipt", {}, ["name"])
     record("baseline", {"physical_balance": initial_balance, "ledger": initial_ledger,
-                        "invoices": initial_invoices, "protected_documents": [n for _, n in protected_ids]})
+                        "invoices": initial_invoices,
+                        "protected_documents": [{"doctype": dt, "name": name}
+                                                for dt, name in sorted(protected.documents)]})
 
     def on_saved(doctype, name):
         record("persisted", {"doctype": doctype, "name": name})
 
     po = create_verified_draft(page, settings, record_property, run_id=run_id, on_saved=on_saved)
     po_name, po_line = po["name"], po["items"][0]["name"]
-    assert all(po_name != name for _, name in protected_ids)
+    assert ("Purchase Order", po_name) not in protected.documents
     assert balance() == initial_balance and ledger() == initial_ledger
     record("po_draft", summary(po))
     order_page = ProcurementDocument(page, settings.base_url, reader, "Purchase Order")
@@ -176,8 +175,8 @@ def test_qa011_partial_receipts_complete_purchase_order(
     assert invoices() == initial_invoices
     all_pr_after = reader.list("Purchase Receipt", {}, ["name"])
     assert {r["name"] for r in all_pr_after} - {r["name"] for r in all_pr_before} == expected_vouchers
-    for (doctype, name), original in protected.items():
-        assert reader.get(doctype, name) == original, f"Protected document changed: {name}"
+    protected.assert_preserved(reader, {"Purchase Order": [po_name],
+                                        "Purchase Receipt": [receipt["name"] for receipt in receipts]})
     for receipt, quantity in zip(receipts, (4, 6)):
         verify_receipt(reader.get("Purchase Receipt", receipt["name"]), quantity, 1)
     gl = reader.list("GL Entry", {"voucher_type": "Purchase Receipt", "voucher_no": receipts[1]["name"]},

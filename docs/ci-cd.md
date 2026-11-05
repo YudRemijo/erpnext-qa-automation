@@ -51,7 +51,7 @@ Commands for selection inspection only:
 .\.venv\Scripts\python.exe -m pytest --collect-only -q -m transactional
 ```
 
-Current selections: 19 offline, 6 integration without transactions, 3 transactional,
+Current selections: 31 offline, 7 integration without transactions, 3 transactional,
 plus 1 separate browser diagnostic. No offline test depends on an installed Chromium
 or reads the real `.env`. Installing the Playwright Python package is not installing
 a browser. A local proof removed ERPNEXT variables from the child process, set CI=true
@@ -131,13 +131,13 @@ ADL master/tax policy contract listed in README. No CI seed or Docker stack is c
 Transactional origins remain restricted to localhost:8080; no tunnel/public exposure
 is added. The backup still lacks a verified independent restore.
 
-QA-011 currently protects four historical local records by reading them explicitly:
-PUR-ORD-2026-00001, PUR-ORD-2026-00002, MAT-PRE-2026-00001, MAT-PRE-2026-00002. This is
-a real portability limitation for a clean ERPNext. This phase does not fabricate those
-records or rewrite approved transactional semantics. Generalizing the preservation
-baseline is a future targeted change requiring a separately authorized E2E run.
-Other tests also depend on named ADL masters; another developer must provision them
-deliberately. A passing offline job does not assert these prerequisites exist.
+QA-011 now dynamically snapshots all preexisting PO/PR documents through the
+paginated read-only API; no historical local document IDs are prerequisites.
+It still requires the named ADL master/tax contract, full intended listing/read
+permissions and a quiet single-writer window. API reads are not an atomic snapshot;
+permission-filtered invisible records are outside protection. A single controlled E2E approval run passed for this change; see the
+[transactional run record](transactional-automation.md#controlled-dynamic-baseline-approval-run--2026-11-04).
+The historic hosted/local results below are separate evidence scopes. Baseline logic is covered by offline tests.
 
 ## Local validation record
 
@@ -187,7 +187,7 @@ functional documents and Docker infrastructure were not modified.
    discrepancy before claiming portable CI success.
 5. Keep ERPNext integration/manual transactions separate. Before enabling a dedicated
    transactional runner, validate restoration, prepare a reproducible data contract,
-   generalize historical-record dependencies and define a single-writer execution window.
+   validate the dynamic preservation baseline and define a single-writer execution window.
 
 
 ## First hosted execution

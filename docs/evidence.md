@@ -8,6 +8,7 @@ because they may include session-adjacent information or environment-specific da
 |---|---|---|
 | QA-008 Draft creation | One saved Draft, verified UI/API | [Transactional guide](transactional-automation.md) |
 | QA-011 complete partial-receipt lifecycle | Local E2E passed in 34.85 seconds; PO00003, PR00003/00004; stock 10 → 20 | [Run record and reconciliation](transactional-automation.md#verified-execution--2026-11-04) |
+| QA-011 dynamic baseline | One controlled E2E passed in 34.87 s; PO00005, PR00006/00007; stock 20 → 30; all 9 prior PO/PR documents preserved | [Dynamic baseline approval](transactional-automation.md#controlled-dynamic-baseline-approval-run--2026-11-04) |
 | NEG-001/002/003 | Missing fields blocked by UI; zero quantity rejected by backend; no persisted documents | [Negative expected/actual results](negative-test-automation.md) |
 | NEG-004 | PO00004 submitted; PR00005 Draft; HTTP 417 OverAllowanceError; physical stock unchanged | [Retained controlled execution](negative-test-automation.md#retained-controlled-execution) |
 | CI preparation | Offline checks, marker selection and nontransactional local regression | [CI validation record](ci-cd.md#local-validation-record) |

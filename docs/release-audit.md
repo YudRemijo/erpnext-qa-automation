@@ -111,8 +111,9 @@ tests/unit/test_offline_contract.py
 - The focused checker is not an exhaustive security scanner, formatter or type checker.
   Candidate/index review complements ignore rules; never force-add excluded data.
 - The approved test contract uses named ADL masters, local numeric/date formats and
-  approved fiscal defaults. QA-011 additionally protects four historic local records;
-  running on a clean site requires addressing this documented data prerequisite.
+  approved fiscal defaults. The original audited QA-011 protected four historic local records; that dependency
+  was subsequently replaced by a dynamic baseline. The revised transactional path
+  passed one separately authorized controlled validation; see the transactional guide.
 - Transactions remain local, explicit and serial; the lock does not exclude manual
   users or another host. No automatic cleanup or resume is implemented.
 - The logical backup has no verified independent restore. No reset/recovery claim
